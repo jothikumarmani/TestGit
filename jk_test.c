@@ -2,8 +2,8 @@
 
 int main ()
 {
-	printf("test program");
-	printf("second time commit");
+	printf("test program\n");
+	printf("second time commit\n");
 
 }
 
