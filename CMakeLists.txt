@@ -1,0 +1,77 @@
+#CMAKE_COPYRIGHT_HEADER_START
+#/**************************************************************************************************
+#*   Copyright (C) 2016 - 2017 NextG-Com Ltd. UK. All rights reserved.
+#*
+#*   This document contains proprietary information belonging to NextG-Com.
+#*
+#*   Passing on and copying of this document, use and communication of its
+#*
+#*   contents is not permitted without prior written authorization..
+#*
+#***************************************************************************************************/
+#CMAKE_COPYRIGHT_HEADER_END
+#CMAKE_COMMON_START
+cmake_minimum_required (VERSION 3.3.2) 
+
+SET(TARGET "WINDOWS" CACHE STRING "Option to specify the target platform")
+SET_PROPERTY(CACHE TARGET PROPERTY STRINGS WINDOWS)
+
+IF(DEFINED CMAKE_BUILD_TYPE)
+   SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Select Build type")
+ELSE()
+   SET(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Select Build type")
+ENDIF()
+SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+
+SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Select Cmake Configurations type" FORCE)
+
+SET(TEST_MODE "TTCN3_ITEST_G3G_AS" CACHE STRING "Option to enable and select a type of TEST")
+SET_PROPERTY(CACHE TEST_MODE PROPERTY STRINGS TTCN3_ITEST_G3G_AS OFF)
+
+SET(WIRESHARK_TRACING "DISABLED" CACHE STRING "Option to enable or disable tracing of messages to Wireshark")
+SET_PROPERTY(CACHE WIRESHARK_TRACING PROPERTY STRINGS ENABLED DISABLED)
+
+SET(MEMORY_STATISTICS "DISABLED" CACHE STRING "Option to enable or disable memory statistics")
+SET_PROPERTY(CACHE MEMORY_STATISTICS PROPERTY STRINGS ENABLED DISABLED)
+
+set(BUILD_VERSION 16.0)
+project (ANGEL_ITEST_AS_${BUILD_VERSION})
+
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/build/gen/host CACHE PATH "Project Installation Directory Prefix")
+
+IF(${TARGET} MATCHES "WINDOWS")
+IF(${CMAKE_GENERATOR} MATCHES "Visual Studio 14 2015")
+	ADD_DEFINITIONS(-DWIN32 -DWINDOWS -DNOW_OS_SE_RTOS -DSE_RTOS_HOST_TEST -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS /WX)
+	MESSAGE("COMPILER_VERSION : MSVC 2015 ")
+  MESSAGE("TARGET PLATFORM WINDOWS ENABLED")
+ENDIF()
+ENDIF()
+
+IF(${MEMORY_STATISTICS} MATCHES "ENABLED")
+    ADD_DEFINITIONS(-DMEMORY_STATISTICS)
+    MESSAGE("MEMORY STATISTICS ENABLED")
+ELSEIF(${MEMORY_STATISTICS} MATCHES "DISABLED")
+    MESSAGE("MEMORY STATISTICS DISABLED")
+ENDIF() 
+
+IF(${TEST_MODE} MATCHES "TTCN3_ITEST_G3G_AS")
+    ADD_DEFINITIONS(-DTTCN3_G3G_AS)
+	ADD_DEFINITIONS(-DSRRC_SIMULATION_ENABLED)
+    MESSAGE("TTCN 3 INTEGRATION TEST MODE ENB AS ENABLED")
+    configure_file(test/xanthus/bss/cmake/inputs/t3_server_ip_cfg.h.in ${CMAKE_SOURCE_DIR}/test/xanthus/bss/cmake/gen/t3_server_ip_cfg.h )    
+ELSEIF(${TEST_MODE} MATCHES "OFF")
+	  MESSAGE("TEST MODE NOT ENABLED")
+ENDIF()
+
+IF((${TEST_MODE} MATCHES "TTCN3_ITEST_G3G_AS") AND (NOT ${TARGET} MATCHES "WINDOWS"))
+    MESSAGE( FATAL_ERROR "WHEN TEST MODE IS TTCN3_ITEST_G3G_AS THEN TARGET PLATFORM MUST ONLY BE WINDOWS. HENCE CMAKE IS EXITING" )
+ENDIF()
+
+ADD_DEFINITIONS(-DPS_AAF_ENABLED)
+
+
+aux_source_directory(${PROJECT_SOURCE_DIR}/ JK)
+add_executable (angel ${JK}) 
+
+
+#CMAKE_ADD_SRC_DIR_END
