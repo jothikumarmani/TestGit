@@ -6,6 +6,9 @@ int main ()
 	printf("second time commit");
 	printf("with gerrit\n");
 	printf("goog\n");
+
+	printf("*************************\n");
+
 }
 
 
