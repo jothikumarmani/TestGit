@@ -2,6 +2,7 @@
 
 int main ()
 {
+	printf("*************************\n");
 	printf("test program\n");
 	printf("second time commit\n");
 	printf("this is third commit\n");
